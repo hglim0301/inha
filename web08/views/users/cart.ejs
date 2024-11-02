@@ -7,6 +7,7 @@
                 <tr>
                     <td><img src="{{thumbnail}}" width="50px"></td>
                     <td>{{title}}<br>{{price}}원<br>{{authors}}<br>{{publisher}}</td>
+                    <td><button class="btn btn-danger btn-sm delete" isbn="{{isbn}}">삭제</button></td>
                 </tr>
             {{/each}}
         </table>
@@ -15,9 +16,16 @@
 
 <script type="module">
     import { app } from '/javascripts/config.js';
-    import { getDatabase, onValue, ref } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getDatabase, onValue, ref, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
     const db = getDatabase(app);
+
+    $('#div_list').on("click", ".delete", async function() {
+        const isbn=$(this).attr("isbn");
+        if(confirm(`${isbn} 도서를 장바구니에서 삭제하실래요?`)) {
+            remove(ref(db, `cart/${uid}/${isbn}`));
+        }
+    });
 
     onValue(ref(db, `cart/${uid}`), snapshot=> { 
         let rows=[];

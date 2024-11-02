@@ -1,3 +1,11 @@
+<style>
+    i {
+        cursor: pointer;
+        color: red;
+        font-size: 30px;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
 <div class="my-5 row justify-content-center">
     <h1 class="text-center mb-5"><%=title%></h1>
     <div class="card col-md-10">
@@ -6,7 +14,10 @@
                 <img src="<%=info.thumbnail%>" width="90%">
             </div>
             <div class="col align-self-center">
-                <h5><%=info.title%></h5>
+                <h5>
+                    <%=info.title%>
+                    <i class="bi-heart" id="heart"></i>
+                </h5>
                 <hr>
                 <div class="mb-3">ISBN: <%=info.isbn%></div>
                 <div class="mb-3">가격: <%=info.price%></div>
@@ -24,7 +35,7 @@
 </div>
 <script type="module">
     import { app } from '/javascripts/config.js';
-    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getDatabase, ref, set, get, onValue, remove} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
     const db = getDatabase(app);
     
@@ -36,8 +47,8 @@
     const contents = "<%=info.contents%>";
     const price = "<%=info.price%>";
     const info = { isbn, title, thumbnail, publisher, authors, contents, price };
-    console.log(info);
-    
+    // console.log(info);
+
     //장바구니를 클릭한 경우
     $(".cart").on("click", async function(){
         if(email){
@@ -53,6 +64,29 @@
         }else{ 
             sessionStorage.setItem("target", window.location.href);
             location.href="/users/login";
+        }
+    });
+    
+    //빈하트를 클릭한 경우
+    $("#heart").on("click", function(){
+            if($(this).attr("class")=="bi-heart"){ // 빈 하트
+                if(confirm("좋아요 추가?")) {
+                    set(ref(db, `favorite/${uid}/${isbn}`), {title});
+                }
+            } else { // 채운 하트
+                if(confirm("좋아요 취소?")) {
+                    remove(ref(db, `favorite/${uid}/${isbn}`));
+                }
+            }
+    });
+    onValue(ref(db, `favorite/${uid}/${isbn}`), snapshot=>{
+        console.log(snapshot);
+        if(snapshot.size==1) { //채운 하트
+            $("#heart").removeClass("bi-heart");
+            $("#heart").addClass("bi-heart-fill");
+        } else if(snapshot.size==0){ // 빈 하트
+            $("#heart").removeClass("bi-heart-fill");
+            $("#heart").addClass("bi-heart");
         }
     });
 </script>
